@@ -43,9 +43,9 @@ namespace igmm_point_process {
     : public math_function_t<nd_point_t,double>
   {
   public:
-    double num_points_lambda;
     nd_aabox_t region;
     dense_matrix_t covariance;
+    double num_points_lambda;
     negative_observation_likelihood_for_mean_t
     ( const nd_aabox_t& region,
       const dense_matrix_t& covariance,
@@ -60,7 +60,7 @@ namespace igmm_point_process {
     {
       // treat each dimension of mean independently
       double p = 1;
-      for( size_t i = 0; i < mu.n; ++i ) {
+      for( size_t i = 0; (long)i < mu.n; ++i ) {
 	double x = mu.coordinate[i];
 	double a = region.start.coordinate[i];
 	double b = region.end.coordinate[i];
@@ -87,8 +87,8 @@ namespace igmm_point_process {
     std::vector<nd_point_t> points;
     std::vector<nd_aabox_t> negative_observations;
     dense_matrix_t covariance;
-    gaussian_distribution_t prior;
     poisson_distribution_t num_distribution;
+    gaussian_distribution_t prior;
     gaussian_distribution_t posterior_for_points_only;
     boost::shared_ptr<math_function_t<nd_point_t,double> > posterior;
 

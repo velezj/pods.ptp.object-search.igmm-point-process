@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6.0)
 
 # pull in the pods macros. See cmake/pods.cmake for documentation
-set(POD_NAME igmm-point-process)
+set(POD_NAME p2l-igmm-point-process)
 include(cmake/pods.cmake)
 
 # automatically build LCM types.  This also defines a number of CMake
@@ -9,26 +9,22 @@ include(cmake/pods.cmake)
 include(cmake/lcmtypes.cmake)
 lcmtypes_build()
 
-# build two LCM test programs
-add_executable(send_message src/send_message.c)
-pods_use_pkg_config_packages(send_message lcm lcmtypes_${POD_NAME})
-
-add_executable(listener src/listener.c)
-pods_use_pkg_config_packages(listener lcm lcmtypes_${POD_NAME})
-
-# make exeutables public
-pods_install_executables(send_message listener)
-
 
 #set(CMAKE_CXX_FLAGS "-std=c++0x -pedantic -Wall -O2 -g")
 #set(CMAKE_CXX_FLAGS "-std=c++0x -pedantic -Wall -O0 -g3")
 
-add_definitions( -std=c++0x -pedantic -Wall )
+
+add_definitions( -Wall -fdiagnostics-show-option )
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 
+option ( USE_PEDANTIC "Turn on -pendantic mode in gcc. This will spit out *lots* of warnings from lcm :-(, but hopefully none from the rest of the code" OFF)
+if( USE_PEDANTIC )
+    add_definitions( -pedantic )
+endif (USE_PEDANTIC)
 
 
-add_library( igmm-point-process SHARED
+
+add_library( p2l-igmm-point-process SHARED
   src/model.cpp
   src/mcmc.cpp
 )
@@ -38,12 +34,18 @@ pods_install_headers(
   src/igmm_point_process.hpp
   DESTINATION
   igmm-point-process)
-pods_install_libraries( igmm-point-process )
-pods_use_pkg_config_packages(igmm-point-process probability-core gsl math-core lcmtypes_probability-core lcmtypes_math-core boost-1.51.0)
-pods_install_pkg_config_file(igmm-point-process
+pods_install_libraries( p2l-igmm-point-process )
+pods_use_pkg_config_packages(p2l-igmm-point-process 
+    p2l-probability-core 
+    gsl-1.16 
+    p2l-math-core 
+    lcmtypes_p2l-probability-core 
+    lcmtypes_p2l-math-core 
+    boost-1.54.0)
+pods_install_pkg_config_file(p2l-igmm-point-process
     CFLAGS
-    LIBS -ligmm-point-process
-    REQUIRES math-core probability-core point-process-core boost-1.51.0
+    LIBS -lp2l-igmm-point-process
+    REQUIRES p2l-math-core p2l-probability-core p2l-point-process-core boost-1.54.0 gsl-1.16
     VERSION 0.0.1)
 
 

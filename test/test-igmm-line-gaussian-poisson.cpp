@@ -53,14 +53,14 @@ int main( int argc, char** argv )
   lcmglColor3f( 0,0,0  );
   lcmglPushMatrix();
   lcmglScalef( 0.1, 1, 1 );
-  lcmglPointSize( 3.0 );
-  double point_radius = 0.1;
-  lcmglBegin( LCMGL_POINTS );
+  //lcmglPointSize( 3.0 );
+  //double point_radius = 0.1;
+  //lcmglBegin( LCMGL_POINTS );
   for( size_t i = 0; i < points.size(); ++i ) {
-    double loc[] = { points[i].coordinate[0], 0, 0 }; 
-    lcmglVertex2d( points[i].coordinate[0], 0 );
+    //double loc[] = { points[i].coordinate[0], 0, 0 }; 
+    //lcmglVertex2d( points[i].coordinate[0], 0 );
   }
-  lcmglEnd();
+  //lcmglEnd();
   lcmglPopMatrix();
   lcmglPointSize( 1.0 );
   bot_lcmgl_switch_buffer( points_lcmgl );
@@ -97,7 +97,7 @@ int main( int argc, char** argv )
 
 
   // sample for a while (burnin)
-  long num = 10000;
+  size_t num = 10000;
   for( size_t i = 0; i < num; ++i ) {
     mcmc_single_step( state );
     

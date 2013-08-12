@@ -102,7 +102,7 @@ namespace igmm_point_process {
     double spread = 3 + negative_observations.size();
     if( spread > 5 )
       spread = 5;
-    for( size_t k = 0; k < window.n; ++k ) {
+    for( size_t k = 0; (long)k < window.n; ++k ) {
       window.start.coordinate[k] -= spread * stddev;
       window.end.coordinate[k] += spread * stddev;
     }
@@ -256,7 +256,7 @@ namespace igmm_point_process {
 				  double num_mix,
 				  double num_ob )
       : alpha(a),
-	num_mixtures( num_mixtures ),
+	num_mixtures( num_mix ),
 	num_obs( num_ob )
     {}
 
@@ -271,9 +271,9 @@ namespace igmm_point_process {
   };
 
   double 
-  resample_alpha_hyperparameter( const double& alpha,  
-				 const std::size_t& num_mixtures,
-				 const std::size_t& num_obs )
+  resample_alpha_hyperparameter( const double alpha,  
+				 const std::size_t num_mixtures,
+				 const std::size_t num_obs )
   {
      alpha_posterior_likelihood_t lik( alpha,
      				      num_mixtures,
@@ -543,7 +543,7 @@ namespace igmm_point_process {
 	// fix obs->mixture mapping since we now have one less mixture
 	for( size_t i = 0; i < state.observation_to_mixture.size(); ++i ) {
 	  if( i == observation_i ) {
-	    state.observation_to_mixture[i] == std::numeric_limits<size_t>::max();
+	    state.observation_to_mixture[i] = std::numeric_limits<size_t>::max();
 	  } else if( state.observation_to_mixture[i] > old_mixture_index ) {
 	    	    
 	    state.observation_to_mixture[i] -= 1;

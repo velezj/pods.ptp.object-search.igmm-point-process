@@ -42,7 +42,7 @@ void create_matlab_file_for_posterior
       << " " << prior;
   
   // open the ifle
-  std::ofstream fout( filename );
+  std::ofstream fout( filename.c_str() );
   
   // ok, calculate the range given the spread
   // as well as the initial x and step size

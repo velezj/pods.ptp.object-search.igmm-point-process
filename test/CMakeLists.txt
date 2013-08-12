@@ -1,59 +1,67 @@
 
-add_executable( test-igmm-mcmc
+add_executable( p2l-test-igmm-mcmc
   test-igmm-mcmc.cpp )
-pods_use_pkg_config_packages( test-igmm-mcmc math-core point-process-core probability-core igmm-point-process lcmtypes_math-core lcmtypes_point-process-core lcmtypes_probability-core lcmtypes_igmm-point-process )
-pods_install_executables( test-igmm-mcmc )
+pods_use_pkg_config_packages( p2l-test-igmm-mcmc 
+    p2l-math-core 
+    p2l-point-process-core 
+    p2l-probability-core 
+    p2l-igmm-point-process 
+    lcmtypes_p2l-math-core 
+     
+    lcmtypes_p2l-probability-core 
+    lcmtypes_p2l-igmm-point-process )
+pods_install_executables( p2l-test-igmm-mcmc )
 
 
 
-add_executable( test-igmm-line-gaussian-poisson
+add_executable( p2l-test-igmm-line-gaussian-poisson
   test-igmm-line-gaussian-poisson.cpp )
-pods_use_pkg_config_packages( test-igmm-line-gaussian-poisson 
-  math-core lcmtypes_math-core
-  point-process-core lcmtypes_point-process-core
-  probability-core lcmtypes_probability-core
-  probability-core-graphics
-  igmm-point-process  lcmtypes_igmm-point-process
-  point-process-experiment-core
+pods_use_pkg_config_packages( p2l-test-igmm-line-gaussian-poisson 
+  p2l-math-core lcmtypes_p2l-math-core
+  p2l-point-process-core 
+  p2l-probability-core lcmtypes_p2l-probability-core
+  p2l-probability-core-graphics
+  p2l-igmm-point-process  lcmtypes_p2l-igmm-point-process
+  p2l-point-process-experiment-core
   )
-pods_install_executables( test-igmm-line-gaussian-poisson )
+pods_install_executables( p2l-test-igmm-line-gaussian-poisson )
 
 
-add_executable( test-igmm-samples
+add_executable( p2l-test-igmm-samples
   test-igmm-samples.cpp )
-pods_use_pkg_config_packages( test-igmm-samples
-  math-core lcmtypes_math-core
-  point-process-core lcmtypes_point-process-core
-  probability-core lcmtypes_probability-core
-  igmm-point-process  lcmtypes_igmm-point-process
-  point-process-experiment-core
+pods_use_pkg_config_packages( p2l-test-igmm-samples
+  p2l-math-core lcmtypes_p2l-math-core
+  p2l-point-process-core 
+  p2l-probability-core lcmtypes_p2l-probability-core
+  p2l-igmm-point-process  lcmtypes_p2l-igmm-point-process
+  p2l-point-process-experiment-core
   )
-pods_install_executables( test-igmm-samples )
+pods_install_executables( p2l-test-igmm-samples )
 
 
-add_executable( test-igmm-entropy
+add_executable( p2l-test-igmm-entropy
   test-entropy.cpp )
-pods_use_pkg_config_packages( test-igmm-entropy
-  math-core lcmtypes_math-core
-  point-process-core lcmtypes_point-process-core
-  probability-core lcmtypes_probability-core
-  igmm-point-process  lcmtypes_igmm-point-process
-  point-process-experiment-core
+pods_use_pkg_config_packages( p2l-test-igmm-entropy
+  p2l-math-core lcmtypes_p2l-math-core
+  p2l-point-process-core 
+  p2l-probability-core lcmtypes_p2l-probability-core
+  p2l-igmm-point-process  lcmtypes_p2l-igmm-point-process
+  p2l-point-process-experiment-core
   )
-pods_install_executables( test-igmm-entropy )
+pods_install_executables( p2l-test-igmm-entropy )
 
 
-add_executable( igmm-point-process-test-negative-observation-likelihood-for-mean
+add_executable( p2l-igmm-point-process-test-negative-observation-likelihood-for-mean
   test-negative-observation-likelihood-for-mean.cpp )
-pods_use_pkg_config_packages( igmm-point-process-test-negative-observation-likelihood-for-mean
-  math-core lcmtypes_math-core
-  point-process-core lcmtypes_point-process-core
-  probability-core lcmtypes_probability-core
-  probability-core-graphics
-  igmm-point-process  lcmtypes_igmm-point-process
-  point-process-experiment-core
+pods_use_pkg_config_packages( p2l-igmm-point-process-test-negative-observation-likelihood-for-mean
+  p2l-math-core lcmtypes_p2l-math-core
+  p2l-point-process-core 
+  p2l-probability-core lcmtypes_p2l-probability-core
+  p2l-probability-core-graphics
+  p2l-igmm-point-process  lcmtypes_p2l-igmm-point-process
+  p2l-point-process-experiment-core
   )
-pods_install_executables( igmm-point-process-test-negative-observation-likelihood-for-mean )
+pods_install_executables( p2l-igmm-point-process-test-negative-observation-likelihood-for-mean )
 
 
 add_subdirectory( unit-tests )
