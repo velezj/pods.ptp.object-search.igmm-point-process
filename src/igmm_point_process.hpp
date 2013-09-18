@@ -52,6 +52,8 @@ namespace igmm_point_process {
       return boost::shared_ptr<mcmc_point_process_t>( new igmm_point_process_t( _window, _state ) );
     }
 
+    virtual ~igmm_point_process_t() {}
+
   public: // API
 
     // Description:
