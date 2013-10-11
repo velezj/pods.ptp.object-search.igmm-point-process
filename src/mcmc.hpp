@@ -54,6 +54,8 @@ namespace igmm_point_process {
 	covariance( covariance ),
 	num_points_lambda( num_points_lambda )
     {}
+
+    virtual ~negative_observation_likelihood_for_mean_t() {}
     
     virtual
     double operator() ( const nd_point_t& mu ) const
