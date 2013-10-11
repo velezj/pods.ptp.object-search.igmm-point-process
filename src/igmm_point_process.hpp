@@ -135,6 +135,18 @@ namespace igmm_point_process {
     {
     }
 
+    virtual
+    void print_shallow_trace( std::ostream& out ) const
+    {
+      out << "EEEK";
+    }
+
+    virtual
+    void print_model_shallow_trace( std::ostream& out ) const
+    {
+      out << "EEEK::MODEL";
+    }
+
 
   public: // STATE
 
