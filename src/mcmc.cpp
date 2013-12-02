@@ -301,10 +301,11 @@ namespace igmm_point_process {
     // dist.prob = sample_alphas;
     // return sample_alphas[sample_from(dist)];
 
-     rejection_sampler_status_t status;
+     autoscaled_rejection_sampler_status_t status;
+     boost::function1<double,double> lik_f = lik;
      double sampled_alpha =
        autoscale_rejection_sample<double>
-       (lik, 0.00001, num_obs + 2, status );
+       (lik_f, 0.00001, (double)num_obs + 2, status );
      return sampled_alpha;
   }
 
