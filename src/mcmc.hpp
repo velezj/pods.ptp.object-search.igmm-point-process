@@ -1,12 +1,15 @@
 
-#if !defined( __MCMC_HPP__ )
-#define __MCMC_HPP__
+#if !defined( __IGMM_POINT_PROCESS_MCMC_HPP__ )
+#define __IGMM_POINT_PROCESS_MCMC_HPP__
 
 #include "model.hpp"
 #include <math-core/math_function.hpp>
 #include <math-core/matrix.hpp>
+#include <math-core/io.hpp>
 #include <probability-core/distribution_utils.hpp>
 #include <gsl/gsl_sf_erf.h>
+#include <iostream>
+#include <stdexcept>
 
 
 namespace igmm_point_process {
@@ -72,6 +75,10 @@ namespace igmm_point_process {
 	double diff = amass - bmass;
 	double lik = exp( 0.5 * num_points_lambda * diff );
 	p *= lik;
+	
+	if( p < 1.0e-20 ) {
+	  std::cout << "  -- neg_obs_lik very small: " << p << " at: " << mu << std::endl;
+	}
       }
       return p;
     }
@@ -117,6 +124,8 @@ namespace igmm_point_process {
       std::size_t dim = 0;
       if( points.empty() == false )
 	dim = points[0].n;
+      else
+	throw std::runtime_error( "no points for posterior!" );
       
       // invert the covariance to get a precision
       // (Not sure if this actually works for anything greater than 1D poitns!!)
@@ -124,6 +133,9 @@ namespace igmm_point_process {
       
       // calculate the sum of the data points
       Eigen::VectorXd sum_vec( dim );
+      for( size_t i = 0; i < dim; ++i ) {
+	sum_vec(i) = 0;
+      }
       for( size_t i = 0; i < points.size(); ++i ) {
 	for( size_t k = 0; k < dim; ++k ) {
 	  sum_vec(k) += points[i].coordinate[k];
@@ -149,6 +161,19 @@ namespace igmm_point_process {
       new_dist.means = to_vector( new_dist_mean ).component;
       new_dist.covariance = to_dense_mat( new_dist_cov );
 
+      
+      if( new_dist.means.size() > 1 &&
+	  new_dist.means[1] > 1000 ) {
+
+	std::cout << "posterior (points only) = " << new_dist << std::endl;
+	std::cout << "   -- cov: " << to_eigen_mat( covariance ) << std::endl;
+	std::cout << "   -- prec_mat: " << prec_mat << std::endl;
+	std::cout << "   -- new_dist_mean: " << new_dist_mean << std::endl;
+	std::cout << "   -- sum_vec: " << sum_vec << std::endl;
+	std::cout << "   -- prior_prec: " << prior_prec << std::endl;
+	std::cout << "   -- prior_mean: " << prior_mean << std::endl;
+      }
+
       posterior_for_points_only = new_dist;
     }
 
@@ -168,7 +193,7 @@ namespace igmm_point_process {
       // observation
       for( size_t i = 0; i < negative_observations.size(); ++i ) {
 	boost::shared_ptr<math_function_t<nd_point_t,double> > neg_lik( new negative_observation_likelihood_for_mean_t( negative_observations[i], covariance, num_distribution.lambda ) );
-	posterior = neg_lik * posterior;
+	//posterior = neg_lik * posterior;
       }
 
       // set the scale to the mean with only the points

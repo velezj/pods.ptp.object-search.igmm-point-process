@@ -9,6 +9,7 @@
 #include <iostream>
 #include <gsl/gsl_sf_gamma.h>
 #include <probability-core/rejection_sampler.hpp>
+#include <probability-core/slice_sampler.hpp>
 #include <gsl/gsl_sf_erf.h>
 #include <math-core/math_function.hpp>
 #include <stdexcept>
@@ -132,15 +133,33 @@ namespace igmm_point_process {
     //   std::cout << x << " " << (*posterior)( point(x) ) << std::endl;
     // }
     
-    // now rejection sample from this posterior
-    rejection_sampler_status_t status;
-    nd_point_t m = 
-      scaled_rejection_sample<nd_point_t>
-      ( solid_function<nd_point_t,double>
-	(boost::shared_ptr<math_function_t<nd_point_t,double> >(posterior)),
-	posterior->scale,
-	uniform_point_sampler_within_window( window ),
-	status);
+    // // now rejection sample from this posterior
+    // rejection_sampler_status_t status;
+    // nd_point_t m = 
+    //   scaled_rejection_sample<nd_point_t>
+    //   ( solid_function<nd_point_t,double>
+    // 	(boost::shared_ptr<math_function_t<nd_point_t,double> >(posterior)),
+    // 	posterior->scale,
+    // 	uniform_point_sampler_within_window( window ),
+    // 	status);
+
+    // slice sample from this posterior
+    // set window to posterior with only points mean
+    window.n = prior.dimension;
+    window.start = point(posterior->posterior_for_points_only.means);
+    window.end = point(posterior->posterior_for_points_only.means);
+    // now extend the window by at least 3 * standard_deviation
+    stddev = sqrt(posterior->posterior_for_points_only.covariance.data[0]);
+    spread = 2;
+    for( size_t k = 0; (long)k < window.n; ++k ) {
+      window.start.coordinate[k] -= spread * stddev;
+      window.end.coordinate[k] += spread * stddev;
+    }
+    static slice_sampler_workplace_t<nd_point_t> workspace( std::make_pair( window.start, window.end ) );
+    boost::function<double (const math_core::nd_point_t&)> posterior_f = *posterior.get();
+    nd_point_t m =
+      slice_sample( posterior_f,
+		    workspace );
 
     // debug
     // std::cout << "Rejection Sampled Mixture Mean, iterations=" << status.iterations << "  " << status.seconds << " seconds" << std::endl;
@@ -280,33 +299,33 @@ namespace igmm_point_process {
      				      num_obs );
     // return rejection_sample<double>( lik, uniform_sampler_within_range(0.00000000001,num_obs) );
 
-    // // Hack, just sample some values and sample from those
-    // uniform_sampler_within_range uniform( 0.00001, 1 );
-    // uniform_unsigned_long_sampler_within_range uniform_long( 1, num_obs + 2 );
-    // std::vector<double> sample_alphas;
-    // std::vector<double> sample_lik;
-    // for( std::size_t i = 0; i < 1000; ++i ) {
-    //   if( flip_coin( 0.5 ) ) {
-    // 	double x = uniform();
-    // 	sample_alphas.push_back( x );
-    // 	sample_lik.push_back( lik(x) );
-    //   } else {
-    // 	double x = uniform_long();
-    // 	sample_alphas.push_back( x );
-    // 	sample_lik.push_back( lik(x) );
-    //   }
-    // }
-    // discrete_distribution_t dist;
-    // dist.n = sample_alphas.size();
-    // dist.prob = sample_alphas;
-    // return sample_alphas[sample_from(dist)];
+    // Hack, just sample some values and sample from those
+    uniform_sampler_within_range uniform( 0.00001, 1 );
+    uniform_unsigned_long_sampler_within_range uniform_long( 1, num_obs + 2 );
+    std::vector<double> sample_alphas;
+    std::vector<double> sample_lik;
+    for( std::size_t i = 0; i < 1000; ++i ) {
+      if( flip_coin( 0.5 ) ) {
+    	double x = uniform();
+    	sample_alphas.push_back( x );
+    	sample_lik.push_back( lik(x) );
+      } else {
+    	double x = uniform_long();
+    	sample_alphas.push_back( x );
+    	sample_lik.push_back( lik(x) );
+      }
+    }
+    discrete_distribution_t dist;
+    dist.n = sample_alphas.size();
+    dist.prob = sample_alphas;
+    return sample_alphas[sample_from(dist)];
 
-     autoscaled_rejection_sampler_status_t status;
-     boost::function1<double,double> lik_f = lik;
-     double sampled_alpha =
-       autoscale_rejection_sample<double>
-       (lik_f, 0.00001, (double)num_obs + 2, status );
-     return sampled_alpha;
+     // autoscaled_rejection_sampler_status_t status;
+     // boost::function1<double,double> lik_f = lik;
+     // double sampled_alpha =
+     //   autoscale_rejection_sample<double>
+     //   (lik_f, 0.00001, (double)num_obs + 2, status );
+     // return sampled_alpha;
   }
 
   //========================================================================
@@ -711,13 +730,13 @@ namespace igmm_point_process {
 					 state.mixture_gaussians.size(),
 					 state.observations.size() );
       
-      // Resample new mean distribution
-      state.model.mean_distribution
-	= resample_mean_distribution_hyperparameters( state );
+      // // Resample new mean distribution
+      // state.model.mean_distribution
+      // 	= resample_mean_distribution_hyperparameters( state );
       
-      // resample the new precision distribution
-      state.model.precision_distribution
-	= resample_precision_distribution_hyperparameters( state );
+      // // resample the new precision distribution
+      // state.model.precision_distribution
+      // 	= resample_precision_distribution_hyperparameters( state );
       
       // resample the number of poitns distribution
       state.model.num_points_per_gaussian_distribution

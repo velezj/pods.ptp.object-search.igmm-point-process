@@ -1,6 +1,6 @@
 
-#if !defined( __MODEL_HPP__ )
-#define __MODEL_HPP__
+#if !defined( __IGMM_POINT_PROCESS_MODEL_HPP__ )
+#define __IGMM_POINT_PROCESS_MODEL_HPP__
 
 #include <lcmtypes/p2l_math_core.hpp>
 #include <lcmtypes/p2l_probability_core.hpp>
