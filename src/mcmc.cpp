@@ -312,20 +312,22 @@ namespace igmm_point_process {
   //========================================================================
 
   gaussian_distribution_t
-  resample_mean_distribution_hyperparameters( igmm_point_process_state_t& state )
+  _resample_mean_distribution_hyperparameters_for_dim
+  ( igmm_point_process_state_t& state,
+    int dim )
   {
-    assert( state.model.mean_distribution.dimension == 1 );
-    if( state.model.mean_distribution.dimension != 1 ) {
-      throw std::domain_error( "Only implemented for 1D gaussians!" );
-    }
+    // assert( state.model.mean_distribution.dimension == 1 );
+    // if( state.model.mean_distribution.dimension != 1 ) {
+    //   throw std::domain_error( "Only implemented for 1D gaussians!" );
+    // }
     
-    double previous_precision = 1.0 / state.model.mean_distribution.covariance.data[0];
+    double previous_precision = 1.0 / state.model.mean_distribution.covariance.data[state.model.mean_distribution.dimension * dim + dim];
     double hyperprior_precision = 1.0 / state.model.prior_variance;
     
     // ok, sum the means of the current mixtures
     double mean_sum = 0;
     for( std::size_t i = 0; i < state.mixture_gaussians.size(); ++i ) {
-      mean_sum += state.mixture_gaussians[i].means[0];
+      mean_sum += state.mixture_gaussians[i].means[dim];
     }
 
     // compute the new variance of the distribution over means
@@ -345,7 +347,7 @@ namespace igmm_point_process {
     // to compute distribution of new precision
     double sum_diff = 0;
     for( std::size_t i = 0; i < state.mixture_gaussians.size(); ++i ) {
-      sum_diff += distance_sq( point(state.mixture_gaussians[i].means),
+      sum_diff += distance_sq( point(state.mixture_gaussians[i].means[dim]),
 			       new_mean );
     }
     
@@ -366,6 +368,36 @@ namespace igmm_point_process {
 
     return sampled_mean_dist;
     
+  }
+
+  //========================================================================
+
+  gaussian_distribution_t
+  resample_mean_distribution_hyperparameters
+  ( igmm_point_process_state_t& state )
+  {
+
+    int dim = state.model.mean_distribution.dimension;
+
+    // ok, we will treat each dimension of the gaussians as independant and
+    // resample each individually
+    std::vector<gaussian_distribution_t> individual_gaussians;
+    for( size_t i = 0; i < dim; ++i ) {
+      individual_gaussians.push_back( _resample_mean_distribution_hyperparameters_for_dim( state, i ) );
+    }
+
+    // now collect all individual gaussians into a single N-dim gaussian
+    gaussian_distribution_t g;
+    g.dimension = dim;
+    for( auto ig : individual_gaussians ) {
+      g.means.push_back( ig.means[0] );
+    }
+    g.covariance = to_dense_mat( Eigen::MatrixXd::Identity(dim,dim) );
+    for( size_t i = 0; i < individual_gaussians.size(); ++i ) {
+      g.covariance.data[ dim * i + i ] = individual_gaussians[i].covariance.data[0];
+    }
+
+    return g;
   }
 
   //========================================================================
@@ -404,10 +436,11 @@ namespace igmm_point_process {
   gamma_distribution_t
   resample_precision_distribution_hyperparameters( igmm_point_process_state_t& state )
   {
-    assert( state.model.mean_distribution.dimension == 1 );
-    if( state.model.mean_distribution.dimension != 1 ) {
-      throw std::domain_error( "Only implemented for 1D points!" );
-    }
+    // we are going to treat each dimension of each gaussian independently
+    // and have the precision distribution boe over all of these
+
+    int dim = state.model.mean_distribution.dimension;
+
 
     double b = state.model.precision_distribution.shape;
     double w = state.model.precision_distribution.rate;
@@ -417,9 +450,11 @@ namespace igmm_point_process {
     double prec_sum = 0;
     double prec_factor = 1;
     for( std::size_t i = 0; i < state.mixture_gaussians.size(); ++i ) {
-      double prec = ( 1.0 / state.mixture_gaussians[i].covariance.data[0] ); 
-      prec_sum += prec;
-      prec_factor *= pow( prec, b/2.0) * exp( - b * w * prec / 2.0 );
+      for( int d = 0; d < dim; ++d ) {
+	double prec = ( 1.0 / state.mixture_gaussians[i].covariance.data[dim * d + d] ); 
+	prec_sum += prec;
+	prec_factor *= pow( prec, b/2.0) * exp( - b * w * prec / 2.0 );
+      }
     }
 
     // rejection sample from this a new shape
@@ -431,7 +466,7 @@ namespace igmm_point_process {
     // 	uniform_sampler_within_range( 0.000001, 100 ) );
 
     precision_shape_posterior_t lik(prec_factor,
-     				    state.mixture_gaussians.size(),
+     				    state.mixture_gaussians.size() * dim,
      				    state.model.precision_distribution.rate );
       
     // Hack, just sample some values and sample from those
