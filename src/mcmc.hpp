@@ -162,8 +162,9 @@ namespace igmm_point_process {
       new_dist.covariance = to_dense_mat( new_dist_cov );
 
       
-      if( new_dist.means.size() > 1 &&
-	  new_dist.means[1] > 1000 ) {
+      if( false || 
+	  (new_dist.means.size() > 1 &&
+	   new_dist.means[1] > 1000 ) ) {
 
 	std::cout << "posterior (points only) = " << new_dist << std::endl;
 	std::cout << "   -- cov: " << to_eigen_mat( covariance ) << std::endl;

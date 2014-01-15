@@ -143,23 +143,29 @@ namespace igmm_point_process {
     // 	uniform_point_sampler_within_window( window ),
     // 	status);
 
-    // slice sample from this posterior
-    // set window to posterior with only points mean
-    window.n = prior.dimension;
-    window.start = point(posterior->posterior_for_points_only.means);
-    window.end = point(posterior->posterior_for_points_only.means);
-    // now extend the window by at least 3 * standard_deviation
-    stddev = sqrt(posterior->posterior_for_points_only.covariance.data[0]);
-    spread = 2;
-    for( size_t k = 0; (long)k < window.n; ++k ) {
-      window.start.coordinate[k] -= spread * stddev;
-      window.end.coordinate[k] += spread * stddev;
-    }
-    static slice_sampler_workplace_t<nd_point_t> workspace( std::make_pair( window.start, window.end ) );
-    boost::function<double (const math_core::nd_point_t&)> posterior_f = *posterior.get();
+    // // slice sample from this posterior
+    // // set window to posterior with only points mean
+    // window.n = prior.dimension;
+    // window.start = point(posterior->posterior_for_points_only.means);
+    // window.end = point(posterior->posterior_for_points_only.means);
+    // // now extend the window by at least 3 * standard_deviation
+    // stddev = sqrt(posterior->posterior_for_points_only.covariance.data[0]);
+    // spread = 2;
+    // for( size_t k = 0; (long)k < window.n; ++k ) {
+    //   window.start.coordinate[k] -= spread * stddev;
+    //   window.end.coordinate[k] += spread * stddev;
+    // }
+    // static slice_sampler_workplace_t<nd_point_t> workspace( std::make_pair( window.start, window.end ) );
+    // boost::function<double (const math_core::nd_point_t&)> posterior_f = *posterior.get();
+    // nd_point_t m =
+    //   slice_sample( posterior_f,
+    // 		    workspace );
+
+    
+    // just use the point-only posterior (gaussian)
     nd_point_t m =
-      slice_sample( posterior_f,
-		    workspace );
+      sample_from( posterior->posterior_for_points_only );
+    
 
     // debug
     // std::cout << "Rejection Sampled Mixture Mean, iterations=" << status.iterations << "  " << status.seconds << " seconds" << std::endl;
