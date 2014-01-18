@@ -6,8 +6,10 @@
 #include <limits>
 #include <math-core/io.hpp>
 #include <math-core/utils.hpp>
+#include <math-core/mpt.hpp>
 #include <iostream>
 #include <gsl/gsl_sf_gamma.h>
+#include <boost/math/special_functions/gamma.hpp>
 #include <probability-core/rejection_sampler.hpp>
 #include <probability-core/slice_sampler.hpp>
 #include <gsl/gsl_sf_erf.h>
@@ -20,7 +22,9 @@ namespace igmm_point_process {
 
   using namespace point_process_core;
   using namespace math_core;
+  using namespace math_core::mpt;
   using namespace probability_core;
+  using boost::math::tgamma;
 
 
 
@@ -274,64 +278,51 @@ namespace igmm_point_process {
 
   //========================================================================
 
+
   class alpha_posterior_likelihood_t
   {
   public:
     alpha_posterior_likelihood_t( double a,
-				  double num_mix,
-				  double num_ob )
+  				  double num_mix,
+  				  double num_ob )
       : alpha(a),
-	num_mixtures( num_mix ),
-	num_obs( num_ob )
+  	num_mixtures( num_mix ),
+  	num_obs( num_ob )
     {}
-
+    
     double alpha;
     double num_mixtures;
     double num_obs;
-		  
+    
     double operator()( const double& x ) const
     {
-      return gsl_sf_gamma( x ) * pow(x, (double)num_mixtures - 2 ) * exp( - 1.0 / x ) / gsl_sf_gamma( x + num_obs );
+      mp_float mp_x = x;
+      mp_float res = tgamma( mp_x ) * pow( mp_x, (double)num_mixtures - 2 ) * exp( - 1.0 / mp_x ) / tgamma( mp_x + num_obs );
+      double d = res.convert_to<double>();
+      if( d == 0 ) {
+	//std::cout << "  %bump alpha_lik to enforce > 0" << std::endl;
+	d = 10.0 * std::numeric_limits<double>::min();
+      }
+      return d;
     }
   };
-
+  
   double 
-  resample_alpha_hyperparameter( const double alpha,  
-				 const std::size_t num_mixtures,
-				 const std::size_t num_obs )
+  resample_alpha_hyperparameter( const double& alpha,  
+  				 const std::size_t& num_mixtures,
+  				 const std::size_t& num_obs )
   {
-     alpha_posterior_likelihood_t lik( alpha,
+    
+    alpha_posterior_likelihood_t lik( alpha,
      				      num_mixtures,
      				      num_obs );
-    // return rejection_sample<double>( lik, uniform_sampler_within_range(0.00000000001,num_obs) );
 
-    // Hack, just sample some values and sample from those
-    uniform_sampler_within_range uniform( 0.00001, 1 );
-    uniform_unsigned_long_sampler_within_range uniform_long( 1, num_obs + 2 );
-    std::vector<double> sample_alphas;
-    std::vector<double> sample_lik;
-    for( std::size_t i = 0; i < 1000; ++i ) {
-      if( flip_coin( 0.5 ) ) {
-    	double x = uniform();
-    	sample_alphas.push_back( x );
-    	sample_lik.push_back( lik(x) );
-      } else {
-    	double x = uniform_long();
-    	sample_alphas.push_back( x );
-    	sample_lik.push_back( lik(x) );
-      }
-    }
-    discrete_distribution_t dist;
-    dist.n = sample_alphas.size();
-    dist.prob = sample_alphas;
-    return sample_alphas[sample_from(dist)];
-
-     // autoscaled_rejection_sampler_status_t status;
-     // boost::function1<double,double> lik_f = lik;
-     // double sampled_alpha =
-     //   autoscale_rejection_sample<double>
-     //   (lik_f, 0.00001, (double)num_obs + 2, status );
-     // return sampled_alpha;
+    static std::pair<double,double> support = std::make_pair( 0.001, 1000.0 );
+    static slice_sampler_workplace_t<double> workspace( support );
+    
+    double sampled_alpha = slice_sample_1d<double,double>( lik, workspace, 0.001 );
+    
+    return sampled_alpha;
   }
 
   //========================================================================
