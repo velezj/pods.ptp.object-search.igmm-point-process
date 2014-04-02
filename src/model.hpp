@@ -4,6 +4,7 @@
 
 #include <lcmtypes/p2l_math_core.hpp>
 #include <lcmtypes/p2l_probability_core.hpp>
+#include <probability-core/gaussian.hpp>
 #include <iosfwd>
 
 namespace igmm_point_process {

@@ -25,6 +25,8 @@ namespace igmm_point_process {
   using namespace math_core::mpt;
   using namespace probability_core;
   using boost::math::tgamma;
+  using boost::math::tgamma_ratio;
+  using boost::math::lgamma;
 
 
 
@@ -81,7 +83,7 @@ namespace igmm_point_process {
   nd_point_t
   resample_mixture_gaussian_mean( const std::vector<nd_point_t>& points, 
 				  const std::vector<nd_aabox_t>& negative_observations,
-  				  const dense_matrix_t& covariance,
+  				  const Eigen::MatrixXd& inv_covariance,
 				  const poisson_distribution_t& num_distribution,
   				  const gaussian_distribution_t& prior )
   {
@@ -91,7 +93,7 @@ namespace igmm_point_process {
       posterior( new gaussian_mixture_mean_posterior_t 
 		 ( points,
 		   negative_observations,
-		   covariance,
+		   inv_covariance,
 		   num_distribution,
 		   prior ) );
 
@@ -297,9 +299,27 @@ namespace igmm_point_process {
     double operator()( const double& x ) const
     {
       mp_float mp_x = x;
-      mp_float res = tgamma( mp_x ) * pow( mp_x, (double)num_mixtures - 2 ) * exp( - 1.0 / mp_x ) / tgamma( mp_x + num_obs );
-      double d = res.convert_to<double>();
-      if( d == 0 ) {
+      //mp_float res = tgamma( mp_x ) * pow( mp_x, (double)num_mixtures - 2 ) * exp( - 1.0 / mp_x ) / tgamma( mp_x + num_obs );
+      //double d = res.convert_to<double>();
+
+      // double gr = tgamma_ratio( x, x + num_obs );
+      // double pw = pow( x, num_mixtures - 2 );
+      // double ep = exp( -1.0 / x );
+      // double d = gr * pw  * ep ;
+
+      // mp_float gr = tgamma_ratio( mp_x, mp_x + num_obs );
+      // mp_float pw = pow( mp_x, (int)num_mixtures - 2 );
+      // mp_float ep = exp( -1.0 / mp_x );
+      // mp_float r = gr * pw  * ep * 1.0e100;
+      // double d = r.convert_to<double>();
+
+      double lgr = lgamma( x ) - lgamma( x + num_obs );
+      double lpw = (num_mixtures-2) * log(x); // same as: log( pow(x,num-2) )
+      double lep = -1.0 / x;
+      double lr = lgr + lpw + lep;
+      double d = exp( lr );
+
+      if( d == 0 || !std::isfinite(d) ) {
 	//std::cout << "  %bump alpha_lik to enforce > 0" << std::endl;
 	d = 10.0 * std::numeric_limits<double>::min();
       }
@@ -685,7 +705,6 @@ namespace igmm_point_process {
 
 	// first get the points in the mixture component
 	std::vector<nd_point_t> points = points_for_mixture( state, mixture_i );
-	std::vector<nd_aabox_t> negative_observations = state.negative_observations;
 
 	// Now resample the mixture number of points
 	double mixture_num_lambda
@@ -697,15 +716,15 @@ namespace igmm_point_process {
 	num_dist.lambda = mixture_num_lambda;
 	nd_point_t mixture_mean 
 	  = resample_mixture_gaussian_mean( points, 
-					    negative_observations,
-					    state.mixture_gaussians[mixture_i].covariance,
+					    state.negative_observations,
+					    state.mixture_gaussians[mixture_i].inverse_covariance(),
 					    num_dist,
 					    state.model.mean_distribution );
 	
 	// now resample the covariance of the mixture
 	dense_matrix_t mixture_covariance
 	  = resample_mixture_gaussian_covariance( points,
-						  negative_observations,
+						  state.negative_observations,
 						  mixture_mean,
 						  state.model.precision_distribution );
 	

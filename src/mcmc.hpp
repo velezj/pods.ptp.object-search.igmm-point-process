@@ -95,7 +95,7 @@ namespace igmm_point_process {
   public:
     std::vector<nd_point_t> points;
     std::vector<nd_aabox_t> negative_observations;
-    dense_matrix_t covariance;
+    Eigen::MatrixXd inverse_covariance;
     poisson_distribution_t num_distribution;
     gaussian_distribution_t prior;
     gaussian_distribution_t posterior_for_points_only;
@@ -106,12 +106,12 @@ namespace igmm_point_process {
     gaussian_mixture_mean_posterior_t
     ( const std::vector<nd_point_t>& points,
       const std::vector<nd_aabox_t>& negative_observations,
-      const dense_matrix_t& cov,
+      const Eigen::MatrixXd& inv_cov,
       const poisson_distribution_t& num_distribution,
       const gaussian_distribution_t& prior )
       : points(points),
-	negative_observations(negative_observations),
-	covariance( cov ),
+	//negative_observations(negative_observations),
+	inverse_covariance( inv_cov ),
 	num_distribution( num_distribution ),
 	prior( prior )
     {
@@ -129,7 +129,7 @@ namespace igmm_point_process {
       
       // invert the covariance to get a precision
       // (Not sure if this actually works for anything greater than 1D poitns!!)
-      Eigen::MatrixXd prec_mat = to_eigen_mat( covariance ).inverse();
+      Eigen::MatrixXd prec_mat = inverse_covariance;
       
       // calculate the sum of the data points
       Eigen::VectorXd sum_vec( dim );
@@ -145,7 +145,7 @@ namespace igmm_point_process {
       
       // Invert the prior's covariance to get a prior precision
       // and get the prior mean as Eign vector
-      Eigen::MatrixXd prior_prec = to_eigen_mat( prior.covariance ).inverse();
+      Eigen::MatrixXd prior_prec = prior.inverse_covariance();
       Eigen::VectorXd prior_mean = to_eigen_mat( prior.means );
       
       // Ok, now calculate the distribution over the new mixture mean
@@ -167,7 +167,7 @@ namespace igmm_point_process {
 	   new_dist.means[1] > 1000 ) ) {
 
 	std::cout << "posterior (points only) = " << new_dist << std::endl;
-	std::cout << "   -- cov: " << to_eigen_mat( covariance ) << std::endl;
+	std::cout << "   -- inv_cov: " << inverse_covariance << std::endl;
 	std::cout << "   -- prec_mat: " << prec_mat << std::endl;
 	std::cout << "   -- new_dist_mean: " << new_dist_mean << std::endl;
 	std::cout << "   -- sum_vec: " << sum_vec << std::endl;
@@ -192,10 +192,10 @@ namespace igmm_point_process {
 
       // Now, we need to multiply by the probability of *each* negative 
       // observation
-      for( size_t i = 0; i < negative_observations.size(); ++i ) {
-	boost::shared_ptr<math_function_t<nd_point_t,double> > neg_lik( new negative_observation_likelihood_for_mean_t( negative_observations[i], covariance, num_distribution.lambda ) );
-	//posterior = neg_lik * posterior;
-      }
+      // for( size_t i = 0; i < negative_observations.size(); ++i ) {
+      // 	boost::shared_ptr<math_function_t<nd_point_t,double> > neg_lik( new negative_observation_likelihood_for_mean_t( negative_observations[i], covariance, num_distribution.lambda ) );
+      // 	//posterior = neg_lik * posterior;
+      // }
 
       // set the scale to the mean with only the points
       this->scale = pdf( point(posterior_for_points_only.means),

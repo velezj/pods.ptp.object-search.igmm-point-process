@@ -26,12 +26,15 @@ void create_matlab_file_for_posterior
   const double eval_spread,
   const long index )
 {
+  
+  Eigen::MatrixXd inverse_covariance = to_eigen_mat( covariance ).inverse();
+
   // create a new posterior function
   boost::shared_ptr<gaussian_mixture_mean_posterior_t>
     posterior( new gaussian_mixture_mean_posterior_t 
 	       ( points,
 		 negative_observations,
-		 covariance,
+		 inverse_covariance,
 		 num_distribution,
 		 prior ) );
   
