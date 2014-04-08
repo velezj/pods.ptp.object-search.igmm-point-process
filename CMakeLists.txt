@@ -49,4 +49,4 @@ pods_install_pkg_config_file(p2l-igmm-point-process
     VERSION 0.0.1)
 
 
-add_subdirectory( test )
+#add_subdirectory( test )
