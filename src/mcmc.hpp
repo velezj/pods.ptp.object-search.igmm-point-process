@@ -166,13 +166,13 @@ namespace igmm_point_process {
 	  (new_dist.means.size() > 1 &&
 	   new_dist.means[1] > 1000 ) ) {
 
-	std::cout << "posterior (points only) = " << new_dist << std::endl;
-	std::cout << "   -- inv_cov: " << inverse_covariance << std::endl;
-	std::cout << "   -- prec_mat: " << prec_mat << std::endl;
-	std::cout << "   -- new_dist_mean: " << new_dist_mean << std::endl;
-	std::cout << "   -- sum_vec: " << sum_vec << std::endl;
-	std::cout << "   -- prior_prec: " << prior_prec << std::endl;
-	std::cout << "   -- prior_mean: " << prior_mean << std::endl;
+	// std::cout << "posterior (points only) = " << new_dist << std::endl;
+	// std::cout << "   -- inv_cov: " << inverse_covariance << std::endl;
+	// std::cout << "   -- prec_mat: " << prec_mat << std::endl;
+	// std::cout << "   -- new_dist_mean: " << new_dist_mean << std::endl;
+	// std::cout << "   -- sum_vec: " << sum_vec << std::endl;
+	// std::cout << "   -- prior_prec: " << prior_prec << std::endl;
+	// std::cout << "   -- prior_mean: " << prior_mean << std::endl;
       }
 
       posterior_for_points_only = new_dist;
