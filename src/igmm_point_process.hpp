@@ -150,6 +150,11 @@ namespace igmm_point_process {
     }
 
 
+    double
+    expected_posterior_entropy_difference
+    ( const std::vector<math_core::nd_point_t>& new_obs ) const;
+    
+    
   public: // STATE
 
     // Description:

@@ -27,6 +27,7 @@ endif (USE_PEDANTIC)
 add_library( p2l-igmm-point-process SHARED
   src/model.cpp
   src/mcmc.cpp
+  src/igmm_point_process.cpp
 )
 pods_install_headers(
   src/model.hpp
