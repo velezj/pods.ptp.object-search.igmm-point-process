@@ -4,16 +4,6 @@ cmake_minimum_required(VERSION 2.6.0)
 set(POD_NAME p2l-igmm-point-process)
 include(cmake/pods.cmake)
 
-# automatically build LCM types.  This also defines a number of CMake
-# variables, see cmake/lcmtypes.cmake for details
-include(cmake/lcmtypes.cmake)
-lcmtypes_build()
-
-
-#set(CMAKE_CXX_FLAGS "-std=c++0x -pedantic -Wall -O2 -g")
-#set(CMAKE_CXX_FLAGS "-std=c++0x -pedantic -Wall -O0 -g3")
-
-
 add_definitions( -std=c++0x -Wall -fdiagnostics-show-option -Wno-unused-local-typedefs -fPIC )
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 
@@ -40,8 +30,6 @@ pods_use_pkg_config_packages(p2l-igmm-point-process
     p2l-probability-core 
     gsl-1.16 
     p2l-math-core 
-    lcmtypes_p2l-probability-core 
-    lcmtypes_p2l-math-core 
     boost-1.54.0)
 pods_install_pkg_config_file(p2l-igmm-point-process
     CFLAGS
