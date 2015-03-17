@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6.0)
 
 # pull in the pods macros. See cmake/pods.cmake for documentation
-set(POD_NAME p2l-igmm-point-process)
+set(POD_NAME object-search.igmm-point-process)
 include(cmake/pods.cmake)
 
 add_definitions( -std=c++0x -Wall -fdiagnostics-show-option -Wno-unused-local-typedefs -fPIC )
@@ -14,7 +14,7 @@ endif (USE_PEDANTIC)
 
 
 
-add_library( p2l-igmm-point-process SHARED
+add_library( object-search.igmm-point-process SHARED
   src/model.cpp
   src/mcmc.cpp
   src/igmm_point_process.cpp
@@ -25,16 +25,16 @@ pods_install_headers(
   src/igmm_point_process.hpp
   DESTINATION
   igmm-point-process)
-pods_install_libraries( p2l-igmm-point-process )
-pods_use_pkg_config_packages(p2l-igmm-point-process 
-    p2l-probability-core 
+pods_install_libraries( object-search.igmm-point-process )
+pods_use_pkg_config_packages(object-search.igmm-point-process 
+    object-search.probability-core 
     gsl-1.16 
-    p2l-math-core 
+    object-search.math-core 
     boost-1.54.0)
-pods_install_pkg_config_file(p2l-igmm-point-process
+pods_install_pkg_config_file(object-search.igmm-point-process
     CFLAGS
-    LIBS -lp2l-igmm-point-process
-    REQUIRES p2l-math-core p2l-probability-core p2l-point-process-core boost-1.54.0 gsl-1.16
+    LIBS -lobject-search.igmm-point-process
+    REQUIRES object-search.math-core object-search.probability-core object-search.point-process-core boost-1.54.0 gsl-1.16
     VERSION 0.0.1)
 
 
